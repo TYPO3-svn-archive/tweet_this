@@ -13,7 +13,6 @@ $TCA['tx_tweetthis_tweets'] = array (
 		'delete' => 'deleted',	
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
 		'iconfile'          => t3lib_extMgm::extRelPath($_EXTKEY).'icon_tx_tweetthis_tweets.gif',
-		'readOnly' => true,
 	),
 );
 
@@ -39,7 +38,8 @@ if (t3lib_extMgm::isLoaded('tt_news')) {
 if (t3lib_extMgm::isLoaded('t3blog')) {
 	t3lib_div::loadTCA('tx_t3blog_post');
 	t3lib_extMgm::addTCAcolumns('tx_t3blog_post',$tempColumns,1);
-	t3lib_extMgm::addToAllTCAtypes('tx_t3blog_post', 'tx_tweetthis_tweetthis;;;;1-1-1', 'after:trackback');
+	t3lib_extMgm::addToAllTCAtypes('tx_t3blog_post', 'tx_tweetthis_tweetthis;;;;1-1-1');
+	// TODO position
 }
 
 $TYPO3_CONF_VARS['BE']['AJAX']['tx_tweetthis::sendTweet'] = 'EXT:tweet_this/classes/class.tx_tweetthis_AjaxHandler.php:tx_tweetthis_AjaxHandler->sendTweet';

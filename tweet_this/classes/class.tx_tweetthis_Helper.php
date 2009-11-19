@@ -45,26 +45,10 @@ class tx_tweetthis_Helper {
 			'text' => $text,
 			'messages' => implode('<br />', $this->messages)
 		);
-
-/*
-		$lastUpdate = unserialize($PA['row']['tx_nwtt3blogtweet_lastUpdate']);
-		$response = $lastUpdate['response']['response'];
-		if (intval($lastUpdate['tstamp']) > 0 && intval($response['id']) > 0) {
-			$tweetUrl = 'http://twitter.com/' . $response['user']['screen_name'] . '/status/' . $response['id'] ;
-			$this->messages[] = '<a href="' . $tweetUrl . '" target="_blank">'.
-				'tweeted at ' . date('d.m.Y H:i:s') .
-				'</a>';
-		}
-*/
 	}
 
 	protected function buildNewTweet($table, $row, $config) {
 		$url = $this->buildUrl($table, $row);
-		/*
-		if ($url == false) {
-			return false;
-		}
-		*/
 
 		// TODO make it configurable
 		$tweet = '###TITLE### - ###URL###';
@@ -84,7 +68,9 @@ class tx_tweetthis_Helper {
 		}
 		preg_match('/href=\"([^"]*)\"/', $link, $matches);
 		$url = html_entity_decode($matches[1]);
-		$url = t3lib_div::locationHeaderUrl($url);
+		// FIXME
+		$url = t3lib_div::getIndpEnv('TYPO3_REQUEST_HOST') .'/'. $url;
+		// t3lib_div::locationHeaderUrl($url);
 		$url = $this->shortenUrl($url);
 
 		return $url;
@@ -182,7 +168,8 @@ class tx_tweetthis_Helper {
 	}
 
 	public function getTweetUrl($twitterResponse) {
-		$tweetUrl = 'http://twitter.com/' . $twitterResponse['user']['screen_name'] . '/status/' . $twitterResponse['id'] ;
+		// FIXME
+		$tweetUrl = 'http://twitter.com/' . $twitterResponse['user']['screen_name'] ; // . '/status/' . $twitterResponse['id'] ;
 		return $tweetUrl;
 	}
 
