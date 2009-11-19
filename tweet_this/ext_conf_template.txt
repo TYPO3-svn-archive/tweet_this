@@ -1,0 +1,14 @@
+# cat=basic//10; type=string; label= Twitter username
+twitter_username=
+
+# cat=basic//10; type=string; label= Twitter password
+twitter_secret=
+
+# cat=basic//10; type=string; label= bit.ly username : sign up here http://bit.ly/account/login )
+bitly_username=
+
+# cat=basic//10; type=string; label= bit.ly API key
+bitly_apikey=
+
+# cat=basic//10; type=int; label= Page-ID : used for creating a faked TSFE for URL generation, should be your News-Single-Page-ID
+pageid=1

@@ -1,0 +1,9 @@
+plugin.tx_linkhandler {
+	tx_t3blog_post {
+		forceLink = 0
+		parameter.field = pid
+		additionalParams = &tx_t3blog_pi1[blogList][showUid]={field:uid}
+   	  	additionalParams.insertData = 1 	
+		useCacheHash = 1
+	}
+}

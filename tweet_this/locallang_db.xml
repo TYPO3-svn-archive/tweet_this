@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>database</type>
+		<description>Language labels for database tables/fields belonging to extension 'tweet_this'</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="tx_tweetthis_tweetthis">Tweet this</label>
+			<label index="tx_tweetthis_tweets">Tweets</label>
+			<label index="tx_tweetthis_tweets.cruser_id">User</label>
+			<label index="tx_tweetthis_tweets.crdate">Date/Time</label>
+			<label index="tx_tweetthis_tweets.foreign_table">Foreign Table</label>
+			<label index="tx_tweetthis_tweets.foreign_id">Foreign UID</label>
+			<label index="tx_tweetthis_tweets.text">Message/Tweet</label>
+			<label index="tx_tweetthis_tweets.response">Response</label>
+		</languageKey>
+	</data>
+</T3locallang>

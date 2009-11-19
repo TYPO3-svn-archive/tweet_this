@@ -1,0 +1,66 @@
+<script type="text/javascript">
+	var ###PREFIX### = ###PREFIX### || {};
+	###PREFIX###.sendTweet = function() {
+		var tweetContent = $('###PREFIX###_tweet').getValue();
+		if (tweetContent.length > 140) {
+			alert('Your tweet should not be longer then 140 chars');
+			return false;
+		}
+
+		var params = {
+			ajaxID: '###PREFIX###::sendTweet' ,
+			tweet: tweetContent,
+			record: '###RECORD_ID###'
+		};
+
+		$('###PREFIX###_spinner').show();
+		new Ajax.Request(
+			'###URL_TYPO3###ajax.php', {
+				parameters: params,
+				onSuccess: function(response) {
+					$('###PREFIX###_spinner').hide();
+					if (response && response.responseJSON) {
+						if (response.responseJSON.success) {
+							$('###PREFIX###_messages').update('Tweet send successfully.<br />' + response.responseJSON.message );
+						} else {
+							$('###PREFIX###_messages').update('Error while sending Tweet. <br />' + response.responseJSON.message );
+							$('###PREFIX###_tweet').enable();
+							$('###PREFIX###_button').show();
+						}
+					} else {
+						$('###PREFIX###_messages').update('Error while recieving response');
+					}
+				},
+				onFailure: function(response) {
+					$('###PREFIX###_messages').update('Error while sending ajax request');
+				}
+			}
+		);
+	};
+	###PREFIX###.countLength = function() {
+		var tweetContent = $('###PREFIX###_tweet').getValue();
+		$('###PREFIX###_length').update(tweetContent.length);
+		if (tweetContent.length > 140) {
+			$('###PREFIX###_length').setStyle({'backgroundColor':'red', 'fontWeight':'bold', 'color':'white'});
+		} else {
+			$('###PREFIX###_length').setStyle({'backgroundColor':'', 'fontWeight':'', 'color':''});
+		}
+	};
+
+	document.observe("dom:loaded", function() {
+		$('###PREFIX###_button').observe('click', ###PREFIX###.sendTweet);
+		$('###PREFIX###_tweet').observe('keyup', ###PREFIX###.countLength);
+		###PREFIX###.countLength();
+	});
+</script>
+<div style="float:left;">
+	<textarea id="###PREFIX###_tweet" cols="40" rows="3">###TWEETTEXT###</textarea><br />
+</div>
+<div style="width: 40%; float:left; margin-left: 10px;">
+	<input id="###PREFIX###_button" type="button" name="" value="Tweet this" onclick="" />
+	<img src="###URL_TYPO3###gfx/spinner.gif" id="###PREFIX###_spinner" style="display: none;" />
+	<br />
+	Length: <span id="###PREFIX###_length">-</span> chars.<br/>
+	<div id="###PREFIX###_messages">###MESSAGES###</div>
+</div>
+<div style="clear: both;"> </div>
