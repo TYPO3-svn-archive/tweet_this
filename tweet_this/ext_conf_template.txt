@@ -10,5 +10,5 @@ bitly_username=
 # cat=basic//10; type=string; label= bit.ly API key
 bitly_apikey=
 
-# cat=basic//10; type=int; label= Page-ID : used for creating a faked TSFE for URL generation, should be your News-Single-Page-ID
+# cat=basic//10; type=int; label= Page-ID : used to initialize an frontend envoirment to create the link to the post/record, might be e.g. your news single page
 pageid=1

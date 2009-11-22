@@ -1,10 +1,58 @@
 <?php
+/***************************************************************
+ *  Copyright notice
+ *
+ *  (c) 2009 Tobias Liebig <liebig@networkteam.com>
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
 
+/**
+ * class.tx_tweetthis_Helper.php
+ *
+ * @author Tobias Liebig <liebig@networkteam.com>
+ */
 class tx_tweetthis_Helper {
+	/**
+	 * instance for singleton
+	 * @var tx_tweetthis_Helper
+	 */
 	protected static $instance;
+
+	/**
+	 * Collection of messages
+	 * @var array
+	 */
 	protected $messages = array();
+
+	/**
+	 * Extension configuration
+	 * @var array
+	 */
 	protected $extConf = array();
 
+	/**
+	 * get/create singelton
+	 * @return tx_tweetthis_Helper
+	 */
 	public static function getInstance() {
 		if (!self::$instance) {
 			self::$instance = new self();
@@ -16,6 +64,14 @@ class tx_tweetthis_Helper {
 		  $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['tweet_this']);
 	}
 
+	/**
+	 * build a tweet or read the last saved tweet for a given record
+	 *
+	 * @param string $table Table name
+	 * @param array $row record data
+	 * @param array $config configuration from TCA config
+	 * @return string the text of the tweet
+	 */
 	public function getTweetFor($table, $row, $config) {
 		$this->messages = array();
 
@@ -41,12 +97,27 @@ class tx_tweetthis_Helper {
 			$text = '';
 		}
 
-		return array(
-			'text' => $text,
-			'messages' => implode('<br />', $this->messages)
-		);
+		return $text;
 	}
 
+	/**
+	 * get and reset all collected messages
+	 * @return string collected messages
+	 */
+	public function getMessages() {
+		$messages = implode('<br />', $this->messages);
+		$this->messages = array();
+		return §messages;
+	}
+
+	/**
+	 * compile a new tweet
+	 * 
+	 * @param <type> $table
+	 * @param <type> $row
+	 * @param <type> $config
+	 * @return <type> string
+	 */
 	protected function buildNewTweet($table, $row, $config) {
 		$url = $this->buildUrl($table, $row);
 
@@ -58,24 +129,45 @@ class tx_tweetthis_Helper {
 		return $tweet;
 	}
 
+	/**
+	 * build and shorten a url for a given record
+	 *
+	 * @param <type> $table
+	 * @param <type> $row
+	 * @return string url for the given record
+	 */
 	protected function buildUrl($table, $row) {
 		$cObj = $this->createCObj(intval($this->extConf['pageid']));
-			// EXT:linkhandler record:<tablename>:<ui>
-		$link = $cObj->getTypoLink('','record:'.$table.':'.$row['uid']);
+
+		if (t3lib_extMgm::isLoaded('linkhandler')) {
+			$parameter = 'record:'.$table.':'.$row['uid'];
+		} else {
+			$parameter = $row['pid'];
+		}
+
+		$link = $cObj->getTypoLink('', $parameter);
 		if ($link == '') {
 			$this->messages[] = 'Can\'t create link.';
 			return false;
 		}
+		// getTypoLink_URL does not work with EXT:linkhandler, so we need to preg_match the URL from the anchor
 		preg_match('/href=\"([^"]*)\"/', $link, $matches);
 		$url = html_entity_decode($matches[1]);
-		// FIXME
+
+		// FIXME may not work if installed in sub directory
 		$url = t3lib_div::getIndpEnv('TYPO3_REQUEST_HOST') .'/'. $url;
-		// t3lib_div::locationHeaderUrl($url);
+
 		$url = $this->shortenUrl($url);
 
 		return $url;
 	}
 
+	/**
+	 * shorten url using bit.ly
+	 * 
+	 * @param string $url long url
+	 * @return string short url
+	 */
 	protected function shortenUrl($url) {
 		$ch = curl_init();
 
@@ -105,15 +197,28 @@ class tx_tweetthis_Helper {
 		}
 	}
 
-	public function getContent($file, $data) {
+	/**
+	 * read a file from the res folder and replace the markers
+	 * @param string $file
+	 * @param array $markerArray
+	 * @return string content of the given file with replaced marker
+	 */
+	public function getTemplated($file, array $markerArray) {
 		$content = t3lib_div::getURL(t3lib_div::getFileAbsFileName('EXT:tweet_this/res/' . $file));
 
-		foreach ($data as $key => $value) {
+		foreach ($markerArray as $key => $value) {
 			$content = str_replace('###' . $key . '###', $value, $content);
 		}
 		return $content;
 	}
 
+	/**
+	 * send a request to the twitter api
+	 *
+	 * @param string $type update
+	 * @param array $values additional data for post request
+	 * @return array response ('httpInfo' => Curl Info, 'twitterResponse' => Twitter APi Response)
+	 */
 	public function requestTwitterApi($type, $values = null) {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, 'http://twitter.com/statuses/' . $type . '.json');
@@ -131,9 +236,7 @@ class tx_tweetthis_Helper {
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $postQuery);
 		}
 
-		// FIXME
 		$userAuth = $this->extConf['twitter_username'] . ':' . $this->extConf['twitter_secret'];
-		// 'etobi_dev:verySecret';
 
 		curl_setopt($ch, CURLOPT_USERPWD, $userAuth);
 
@@ -147,6 +250,14 @@ class tx_tweetthis_Helper {
 		);
 	}
 
+	/**
+	 * store a tweet record
+	 * 
+	 * @param string $record_id identifier table:uid:pid like 'tt_news:1:42'
+	 * @param array $response response array returned from requestTwitterApi
+	 * @param string $text The text of the tweet
+	 * @return void
+	 */
 	public function storeTweet($record_id, $response, $text) {
 		if (empty($record_id)) {
 			return false;
@@ -167,22 +278,41 @@ class tx_tweetthis_Helper {
 		);
 	}
 
+	/**
+	 * get the twitter url for the tweet
+	 *
+	 * @param array $response response array returned from requestTwitterApi
+	 * @return string url
+	 */
 	public function getTweetUrl($twitterResponse) {
 		// FIXME
-		$tweetUrl = 'http://twitter.com/' . $twitterResponse['user']['screen_name'] ; // . '/status/' . $twitterResponse['id'] ;
+		$tweetUrl = 'http://twitter.com/' . $twitterResponse['user']['screen_name'];
+			// . '/status/' . $twitterResponse['id'] ;
 		return $tweetUrl;
 	}
 
+	/**
+	 * get a link (<a>) for a tweet
+	 * 
+	 * @param array $response response array returned from requestTwitterApi
+	 * @return string link tag
+	 */
 	public function getTweetLink($twitterResponse) {
 		$tweetUrl = $this->getTweetUrl($twitterResponse);
-		$link = '<a href="' . $tweetUrl . '" target="_blank">'.  'tweeted at ' . date('d.m.Y H:i:s', strtotime($twitterResponse['created_at'])) .  ' (click here)</a>';
+		$link = '<a href="' .
+			$tweetUrl .
+			'" target="_blank">' .
+			'tweeted at ' .
+			date('d.m.Y H:i:s', strtotime($twitterResponse['created_at'])) .
+			' (click here)</a>';
 		return $link;
 	}
 
 	/**
+	 * takes a response (requestTwitterApi) and returns a information "message"
 	 *
-	 * @param <type> $response
-	 * @return <type> 
+	 * @param array $response response array returned from requestTwitterApi
+	 * @return array true/false if tweet was successful; message
 	 */
 	public function getMessageByResponse($response) {
 		if ($response['httpInfo']['http_code'] != 200) {
@@ -197,11 +327,17 @@ class tx_tweetthis_Helper {
 	}
 
 	/**
+	 * create a TSFE and return the cObj
 	 * http://www.typo3-scout.de/2008/05/28/cobject-im-backend/
 	 *
+	 * @param int page id to initialize the TSFE
 	 * @return tslib_content
 	 */
 	 protected function createCObj($pid = 1) {
+		if ($GLOBALS['TSFE']) {
+			return $GLOBALS['TSFE']->cObj;
+		}
+
                 require_once(PATH_site.'typo3/sysext/cms/tslib/class.tslib_fe.php');
                 require_once(PATH_site.'t3lib/class.t3lib_userauth.php');
                 require_once(PATH_site.'typo3/sysext/cms/tslib/class.tslib_feuserauth.php');
@@ -285,7 +421,23 @@ class tx_tweetthis_Helper {
                 $GLOBALS['TSFE']->newCObj();
 		return  $GLOBALS['TSFE']->cObj;
         }
-}
 
+	/**
+	 *
+	 * @param string $status tweet text
+	 * @param string $record_id record identifier
+	 * @return string message
+	 */
+	public function twitterUpdate($status, $record_id = '') {
+		$values = array(
+			'status' => substr($status, 0, 140)
+		);
+		$response = $this->requestTwitterApi('update', $values);
+		$this->storeTweet($record_id, $response, $response['twitterResponse']['text']);
+
+		return $this->getMessageByResponse($response);
+	}
+
+}
 
 ?>
