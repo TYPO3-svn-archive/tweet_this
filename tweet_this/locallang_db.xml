@@ -6,6 +6,7 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
+			<label index="be_users.tx_tweetthis_signature">Twitter signature</label>
 			<label index="tx_tweetthis_tweetthis">Tweet this</label>
 			<label index="tx_tweetthis_tweets">Tweets</label>
 			<label index="tx_tweetthis_tweets.cruser_id">User</label>

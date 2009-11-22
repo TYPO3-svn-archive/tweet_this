@@ -16,3 +16,10 @@ CREATE TABLE tx_tweetthis_tweets (
 	PRIMARY KEY (uid),
 	KEY parent (pid)
 );
+
+#
+# Table structure for table 'be_users'
+#
+CREATE TABLE be_users (
+    tx_tweetthis_signature tinytext
+);

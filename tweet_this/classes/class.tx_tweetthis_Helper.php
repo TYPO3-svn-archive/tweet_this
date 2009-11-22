@@ -107,7 +107,7 @@ class tx_tweetthis_Helper {
 	public function getMessages() {
 		$messages = implode('<br />', $this->messages);
 		$this->messages = array();
-		return §messages;
+		return $messages;
 	}
 
 	/**
@@ -121,10 +121,10 @@ class tx_tweetthis_Helper {
 	protected function buildNewTweet($table, $row, $config) {
 		$url = $this->buildUrl($table, $row);
 
-		// TODO make it configurable
-		$tweet = '###TITLE### - ###URL###';
-		$tweet = str_replace('###TITLE###', $row[$config['tweetthis_title']], $tweet);
+		$tweet = $this->extConf['tweet'];
+		$tweet = str_replace('###TEXT###', $row[$config['tweetthis_title']], $tweet);
 		$tweet = str_replace('###URL###', $url, $tweet);
+		$tweet = str_replace('###SIGNATURE###', $GLOBALS['BE_USER']->user['tx_tweetthis_signature'], $tweet);
 
 		return $tweet;
 	}

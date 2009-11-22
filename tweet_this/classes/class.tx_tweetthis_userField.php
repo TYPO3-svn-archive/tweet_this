@@ -38,9 +38,9 @@ class tx_tweetthis_userField {
 		$this->PA = $PA;
 		$helper = tx_tweetthis_Helper::getInstance();
 
-		if (intval($PA['row']['uid']) <= 0 || $PA['row']['hidden'] == 1 ) {
+		if (intval($PA['row']['uid']) == 0 || $PA['row']['hidden'] == 1 ) {
 			// TODO l10n
-			return 'Please save your record first.';
+			return 'Please save and unhide your record first.';
 		}
 
 		$tweet = $helper->getTweetFor(

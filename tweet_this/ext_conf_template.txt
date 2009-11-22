@@ -12,3 +12,7 @@ bitly_apikey=
 
 # cat=basic//10; type=int; label= Page-ID : used to initialize an frontend envoirment to create the link to the post/record, might be e.g. your news single page
 pageid=1
+
+
+# cat=basic//10; type=string; label= Tweet template : ###TEXT### The actual text, ###URL## shortend URL to the post, ###SIGNATURE### signature form BE-User
+tweet=###TEXT### - ###URL### (by ###SIGNATURE###)

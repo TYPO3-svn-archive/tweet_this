@@ -16,6 +16,22 @@ $TCA['tx_tweetthis_tweets'] = array (
 	),
 );
 
+$tempColumns = array (
+    'tx_tweetthis_signature' => array (
+        'exclude' => 0,
+        'label' => 'LLL:EXT:tweet_this/locallang_db.xml:be_users.tx_tweetthis_signature',
+        'config' => array (
+            'type' => 'input',
+            'size' => '30',
+        )
+    ),
+);
+
+
+t3lib_div::loadTCA('be_users');
+t3lib_extMgm::addTCAcolumns('be_users',$tempColumns,1);
+t3lib_extMgm::addToAllTCAtypes('be_users','tx_tweetthis_signature', '', 'after:email');
+
 
 $tempColumns = array (
     'tx_tweetthis_tweetthis' => array (
