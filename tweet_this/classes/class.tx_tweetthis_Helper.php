@@ -228,7 +228,7 @@ class tx_tweetthis_Helper {
 		if (is_array($values)) {
 			$posQuery = '';
 			foreach($values as $key => $value) {
-				$postQuery .= urlencode($key) . '=' . urlencode($value) . '&';
+				$postQuery .= urlencode($key) . '=' . urlencode(utf8_encode($value)) . '&';
 			}
 			rtrim($postQuery, '&');
 
