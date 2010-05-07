@@ -139,9 +139,16 @@ class tx_tweetthis_Helper {
 	protected function buildUrl($table, $row) {
 		$cObj = $this->createCObj(intval($this->extConf['pageid']));
 
-		if (t3lib_extMgm::isLoaded('linkhandler')) {
+		if ($table == 'pages') {
+			$parameter = $row['uid'];
+			
+		} else if ($table != 'tt_content' 
+		  && t3lib_extMgm::isLoaded('linkhandler')) {
 			$parameter = 'record:'.$table.':'.$row['uid'];
-		} else {
+		}
+		
+		if (empty($parameter) 
+		  && !empty($row['pid'])) {
 			$parameter = $row['pid'];
 		}
 
@@ -169,6 +176,12 @@ class tx_tweetthis_Helper {
 	 * @return string short url
 	 */
 	protected function shortenUrl($url) {
+	
+		if (empty($this->extConf['bitly_username']) 
+		  || empty($this->extConf['bitly_apikey'])) {
+			return $url;
+		} 
+	
 		$ch = curl_init();
 
 		$apiUrl = 'http://api.bit.ly/shorten?version=2.0.1' .
@@ -193,7 +206,7 @@ class tx_tweetthis_Helper {
 			} else {
 				$this->messages[] = 'Can\'t shorten URL: HTTP status ' . $info['http_code'];
 			}
-			return false;
+			return $url;
 		}
 	}
 

@@ -1,3 +1,11 @@
+2010-0504 Tobias Liebig  <liebig@networkteam.com>
+
+	* add support for EXT:kb_eventbox events
+	* add support for tt_content and pages
+	* add ext configuration to enable tweet_this for certain purposes
+	* improve bit.ly usages (leave username and api key blank to disable url shortening)
+	* improve url generation with EXT:linkhandler
+
 2009-11-19 Tobias Liebig  <liebig@networkteam.com>
 
 	* initial code generated with kickstarter
