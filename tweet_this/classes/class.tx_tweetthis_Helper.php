@@ -25,12 +25,18 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+require_once(t3lib_extMgm::extPath('tweet_this','res/twitteroauth/twitteroauth.php'));
+
 /**
  * class.tx_tweetthis_Helper.php
  *
  * @author Tobias Liebig <liebig@networkteam.com>
  */
 class tx_tweetthis_Helper {
+	
+	var $consumerKey = '0v5AbsCNzwscTTEYwSlDHw';
+	var $consumerSecret = 'Fsqf5brQyzaam8ydRBKbpa9JsgMHQdv9Haw7KAdPWY';
+	
 	/**
 	 * instance for singleton
 	 * @var tx_tweetthis_Helper
@@ -93,7 +99,7 @@ class tx_tweetthis_Helper {
 			$text = $this->buildNewTweet($table, $row, $config);
 		}
 
-		if ($text === false) {
+		if ($text === FALSE) {
 			$text = '';
 		}
 
@@ -155,7 +161,7 @@ class tx_tweetthis_Helper {
 		$link = $cObj->getTypoLink('', $parameter);
 		if ($link == '') {
 			$this->messages[] = 'Can\'t create link.';
-			return false;
+			return FALSE;
 		}
 		// getTypoLink_URL does not work with EXT:linkhandler, so we need to preg_match the URL from the anchor
 		preg_match('/href=\"([^"]*)\"/', $link, $matches);
@@ -230,37 +236,20 @@ class tx_tweetthis_Helper {
 	 *
 	 * @param string $type update
 	 * @param array $values additional data for post request
-	 * @return array response ('httpInfo' => Curl Info, 'twitterResponse' => Twitter APi Response)
+	 * @return array response ('twitterResponse' => Twitter APi Response)
 	 */
 	public function requestTwitterApi($type, $values = null) {
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'http://twitter.com/statuses/' . $type . '.json');
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-		if (is_array($values)) {
-			$posQuery = '';
-			foreach($values as $key => $value) {
-				$postQuery .= urlencode($key) . '=' . urlencode(utf8_encode($value)) . '&';
-			}
-			rtrim($postQuery, '&');
-
-			curl_setopt($ch, CURLOPT_POST, count($values));
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $postQuery);
+		$access_token = t3lib_div::makeInstance('t3lib_Registry')->get('tx_tweetthis', 'accessToken');
+		
+		if (!empty($access_token['oauth_token']) && !empty($access_token['oauth_token_secret'])) {
+			$connection = new TwitterOAuth($this->consumerKey, $this->consumerSecret, $access_token['oauth_token'], $access_token['oauth_token_secret']);
+			$connection->decode_json = FALSE;
+			$post = json_decode($connection->post('statuses/update', $values), TRUE);
+			
+			return array(
+				'twitterResponse' => $post
+			);
 		}
-
-		$userAuth = $this->extConf['twitter_username'] . ':' . $this->extConf['twitter_secret'];
-
-		curl_setopt($ch, CURLOPT_USERPWD, $userAuth);
-
-		$response = curl_exec($ch);
-		$info = curl_getinfo($ch);
-		curl_close($ch);
-
-		return array(
-			'httpInfo' => $info,
-			'twitterResponse' => json_decode($response, true)
-		);
 	}
 
 	/**
@@ -273,7 +262,7 @@ class tx_tweetthis_Helper {
 	 */
 	public function storeTweet($record_id, $response, $text) {
 		if (empty($record_id)) {
-			return false;
+			return FALSE;
 		}
 		list($table, $uid, $pid) = explode(':', $record_id);
 		$GLOBALS['TYPO3_DB']->exec_INSERTquery(
@@ -328,14 +317,14 @@ class tx_tweetthis_Helper {
 	 * @return array true/false if tweet was successful; message
 	 */
 	public function getMessageByResponse($response) {
-		if ($response['httpInfo']['http_code'] != 200) {
-			$message = 'Status: ' . intval($response['httpInfo']['http_code']) .  ' - '.  $response['twitterResponse']['error'];
-			return array(false, $message);
+		if (!empty($response['twitterResponse']['error'])) {
+			$message = $response['twitterResponse']['error'];
+			return array(FALSE, $message);
 
 		} else {
 			$message = $this->getTweetLink($response['twitterResponse']);
 
-			return array(true, $message);
+			return array(TRUE, $message);
 		}
 	}
 
@@ -378,7 +367,7 @@ class tx_tweetthis_Helper {
 
                 // Prevent mysql debug messages from messing up the output
                 $sqlDebug = $GLOBALS['TYPO3_DB']->debugOutput;
-                $GLOBALS['TYPO3_DB']->debugOutput = false;
+                $GLOBALS['TYPO3_DB']->debugOutput = FALSE;
 
                 $GLOBALS['TSFE']->initLLVars();
                 $GLOBALS['TSFE']->initFEuser();
@@ -392,19 +381,19 @@ class tx_tweetthis_Helper {
 
                 if (count($page) == 0) {
                         $GLOBALS['TYPO3_DB']->debugOutput = $sqlDebug;
-                        return false;
+                        return FALSE;
                 }
 
                 // If the page is a shortcut, look up the page to which the shortcut references, and do the same check as above.
                 if ($page['doktype'] == 4 && count($GLOBALS['TSFE']->getPageShortcut($page['shortcut'],$page['shortcut_mode'],$page['uid'])) == 0) {
                         $GLOBALS['TYPO3_DB']->debugOutput = $sqlDebug;
-                        return false;
+                        return FALSE;
                 }
 
                 // Spacer pages and sysfolders result in a page not found page too…
                 if ($page['doktype'] == 199 || $page['doktype'] == 254) {
                         $GLOBALS['TYPO3_DB']->debugOutput = $sqlDebug;
-                        // return false;
+                        // return FALSE;
                 }
 
                 $GLOBALS['TSFE']->getPageAndRootline();
@@ -422,7 +411,7 @@ class tx_tweetthis_Helper {
                 // And the same applies if pSetup is empty, which would result in a "The page is not configured" message.
                 if (!$GLOBALS['TSFE']->tmpl->loaded || ($GLOBALS['TSFE']->tmpl->loaded && !$GLOBALS['TSFE']->pSetup)) {
                         $GLOBALS['TYPO3_DB']->debugOutput = $sqlDebug;
-                        return false;
+                        return FALSE;
                 }
 
                 $GLOBALS['TSFE']->getConfigArray();
@@ -432,7 +421,7 @@ class tx_tweetthis_Helper {
                 $GLOBALS['TSFE']->connectToDB();
                 $GLOBALS['TSFE']->determineId();
                 $GLOBALS['TSFE']->newCObj();
-		return  $GLOBALS['TSFE']->cObj;
+			return  $GLOBALS['TSFE']->cObj;
         }
 
 	/**
@@ -445,6 +434,9 @@ class tx_tweetthis_Helper {
 		$values = array(
 			'status' => substr($status, 0, 140)
 		);
+		
+		$access_token = t3lib_div::makeInstance('t3lib_Registry')->get('tx_tweetthis', 'accessToken');
+		
 		$response = $this->requestTwitterApi('update', $values);
 		$this->storeTweet($record_id, $response, $response['twitterResponse']['text']);
 

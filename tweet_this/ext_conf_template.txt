@@ -1,8 +1,5 @@
-# cat=basic//10; type=string; label= Twitter username
-twitter_username=
-
-# cat=basic//10; type=string; label= Twitter password
-twitter_secret=
+# cat=basic/enable; type=user[EXT:tweet_this/classes/class.tx_tweetthis_emconfhelper.php:tx_tweetthis_emconfhelper->authenticateTwitter]; label=Twitter Authentication
+twitterAuthentication=0
 
 # cat=basic//10; type=string; label= bit.ly username : sign up here http://bit.ly/account/login )
 bitly_username=
