@@ -36,7 +36,7 @@ class tx_tweetthis_userField {
 
 	public function renderFieldTweetThis($PA, $fobj) {
 		$this->PA = $PA;
-		$helper = tx_tweetthis_Helper::getInstance();
+		$helper = t3lib_div::makeInstance('tx_tweetthis_Helper');
 
 		if (intval($PA['row']['uid']) == 0 || $PA['row']['hidden'] == 1 ) {
 			// TODO l10n

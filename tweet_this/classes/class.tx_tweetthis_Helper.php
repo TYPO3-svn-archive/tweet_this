@@ -32,16 +32,10 @@ require_once(t3lib_extMgm::extPath('tweet_this','res/twitteroauth/twitteroauth.p
  *
  * @author Tobias Liebig <liebig@networkteam.com>
  */
-class tx_tweetthis_Helper {
+class tx_tweetthis_Helper implements t3lib_Singleton {
 	
 	var $consumerKey = '0v5AbsCNzwscTTEYwSlDHw';
 	var $consumerSecret = 'Fsqf5brQyzaam8ydRBKbpa9JsgMHQdv9Haw7KAdPWY';
-	
-	/**
-	 * instance for singleton
-	 * @var tx_tweetthis_Helper
-	 */
-	protected static $instance;
 
 	/**
 	 * Collection of messages
@@ -54,17 +48,6 @@ class tx_tweetthis_Helper {
 	 * @var array
 	 */
 	protected $extConf = array();
-
-	/**
-	 * get/create singelton
-	 * @return tx_tweetthis_Helper
-	 */
-	public static function getInstance() {
-		if (!self::$instance) {
-			self::$instance = new self();
-		}
-		return self::$instance;
-	}
 
 	public function __construct() {
 		  $this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['tweet_this']);
@@ -443,6 +426,10 @@ class tx_tweetthis_Helper {
 		return $this->getMessageByResponse($response);
 	}
 
+}
+
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/tweet_this/classes/class.tx_tweetthis_Helper.php']) {
+	include_once ($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/tweet_this/classes/class.tx_tweetthis_Helper.php']);
 }
 
 ?>

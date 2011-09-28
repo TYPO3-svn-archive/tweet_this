@@ -39,7 +39,7 @@ class tx_tweetthis_AjaxHandler {
 	protected $helper;
 
 	function __construct() {
-		$this->helper = tx_tweetthis_Helper::getInstance();
+		$this->helper = t3lib_div::makeInstance('tx_tweetthis_Helper');
 	}
 
 	/**
